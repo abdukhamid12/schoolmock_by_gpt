@@ -1,45 +1,41 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
-from .models import School, ClassGroup, Student, Test, Question, AnswerOption, StudentAnswer
-from .serializers import SchoolSerializer, ClassGroupSerializer, StudentSerializer, TestSerializer, QuestionSerializer, AnswerOptionSerializer, StudentAnswerSerializer
+from rest_framework.decorators import action
+from .models import Test, StudentAnswer
+from .serializers import TestSerializer
 
-class SchoolViewSet(viewsets.ModelViewSet):
-    queryset = School.objects.all()
-    serializer_class = SchoolSerializer
-
-class ClassGroupViewSet(viewsets.ModelViewSet):
-    queryset = ClassGroup.objects.all()
-    serializer_class = ClassGroupSerializer
-
-class StudentViewSet(viewsets.ModelViewSet):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-
+# ViewSet для управления тестами
 class TestViewSet(viewsets.ModelViewSet):
     queryset = Test.objects.all()
     serializer_class = TestSerializer
 
-    # Проверка наличия теста по ID
-    def retrieve(self, request, *args, **kwargs):
-        test_id = kwargs.get('pk')
-        test = self.queryset.filter(test_id=test_id).first()
+    # Эндпоинт для отправки ответов студентов
+    @action(detail=True, methods=['post'])
+    def submit_answer(self, request, pk=None):
+        test = self.get_object()
+        student = request.data.get('student')
+        answers = request.data.get('answers')
+
+        for ans in answers:
+            StudentAnswer.objects.create(
+                student_id=student,
+                test=test,
+                question_id=ans['question_id'],
+                answer_id=ans['answer_id']
+            )
+        return Response({'status': 'answers submitted'}, status=status.HTTP_200_OK)
+
+    # Эндпоинт для получения теста по ID
+    @action(detail=False, methods=['get'])
+    def test_by_id(self, request):
+        test_id = request.query_params.get('test_id')
+        test = Test.objects.filter(id=test_id).first()
         if not test:
-            return Response({"error": "Тест с таким ID не найден"}, status=404)
+            return Response({'error': 'Invalid test ID'}, status=status.HTTP_404_NOT_FOUND)
+
         serializer = self.get_serializer(test)
         return Response(serializer.data)
 
-class QuestionViewSet(viewsets.ModelViewSet):
-    queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
-
-class AnswerOptionViewSet(viewsets.ModelViewSet):
-    queryset = AnswerOption.objects.all()
-    serializer_class = AnswerOptionSerializer
-
-class StudentAnswerViewSet(viewsets.ModelViewSet):
-    queryset = StudentAnswer.objects.all()
-    serializer_class = StudentAnswerSerializer
-
 def home(request):
-    return render(request,'index.html')
+    return render(request, 'index.html')

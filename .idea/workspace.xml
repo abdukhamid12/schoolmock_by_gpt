@@ -5,6 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e4ac167b-87c9-4c3f-97f2-5158b0650812" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/static/app.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/_base.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/school_system/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/school_system/settings.py" afterDir="false" />

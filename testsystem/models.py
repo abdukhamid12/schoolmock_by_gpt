@@ -1,68 +1,60 @@
 from django.db import models
-from django.utils import timezone
+from django.contrib.auth.models import User
 
-# Модель для школы
-class School(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-# Модель для класса
-class ClassGroup(models.Model):
-    name = models.CharField(max_length=100)
-    school = models.ForeignKey(School, on_delete=models.CASCADE)
+# Модель учителя
+class Teacher(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    school = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.name} - {self.school.name}"
+        return self.user.username
 
-# Модель для учеников
+# Модель студента
 class Student(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    class_group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    surname = models.CharField(max_length=100)
+    school = models.CharField(max_length=100)
+    classroom = models.CharField(max_length=50)
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.name} {self.surname}"
 
-# Модель для теста
+# Модель теста
 class Test(models.Model):
-    title = models.CharField(max_length=100)
-    class_group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE)
-    start_time = models.DateTimeField()
-    duration = models.DurationField(default=timezone.timedelta(hours=1))
-    test_id = models.CharField(max_length=100, unique=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    classroom = models.CharField(max_length=50)
+    start_date = models.DateTimeField()
+    duration = models.IntegerField(default=60)  # Время теста в минутах
 
     def __str__(self):
         return self.title
 
-# Модель для вопроса
+# Модель вопроса
 class Question(models.Model):
+    test = models.ForeignKey(Test, related_name="questions", on_delete=models.CASCADE)
     text = models.TextField()
-    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+    difficulty = models.IntegerField(default=1)
     correct_answer = models.CharField(max_length=255)
 
     def __str__(self):
         return self.text
 
-# Модель для вариантов ответа (включает правильный ответ)
+# Варианты ответа на вопрос
 class AnswerOption(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    options = models.JSONField()  # Список вариантов
+    question = models.ForeignKey(Question, related_name="options", on_delete=models.CASCADE)
+    text = models.CharField(max_length=255)
 
     def __str__(self):
-        return f"Вопрос: {self.question.text}, Варианты: {self.options}"
+        return self.text
 
-# Модель для ответов учеников
+# Ответы студентов
 class StudentAnswer(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    test = models.ForeignKey(Test, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    selected_answer = models.CharField(max_length=255)
-    is_correct = models.BooleanField()
-
-    def check_answer(self):
-        self.is_correct = self.selected_answer == self.question.correct_answer
-        self.save()
+    answer = models.ForeignKey(AnswerOption, on_delete=models.CASCADE)
+    points_awarded = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"Ответ от {self.student.first_name} на вопрос {self.question.text}"
+        return f"{self.student.name} {self.student.surname} - {self.test.title}"
