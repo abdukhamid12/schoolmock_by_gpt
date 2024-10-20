@@ -33,3 +33,10 @@ class QuestionAdmin(admin.ModelAdmin):
 class StudentAnswerAdmin(admin.ModelAdmin):
     list_display = ('student', 'test', 'question', 'answer', 'points_awarded')
     list_filter = ('test', 'student')
+
+    # Добавьте функциональность для подсчета общих баллов для каждого студента
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Вы можете добавить дополнительные обработки, если необходимо
+        return qs
+

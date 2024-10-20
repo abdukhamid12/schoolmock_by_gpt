@@ -26,6 +26,8 @@ class Test(models.Model):
     classroom = models.CharField(max_length=50)
     start_date = models.DateTimeField()
     duration = models.IntegerField(default=60)  # Время теста в минутах
+    is_finished = models.BooleanField(default=False)  # New field to indicate if the test is finished
+    finished_at = models.DateTimeField(null=True, blank=True)  # Store when the test was finished
 
     def __str__(self):
         return self.title
