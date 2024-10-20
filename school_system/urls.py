@@ -4,6 +4,7 @@ from testsystem.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('testsystem.urls')),  # Подключаем API
-    path('home/', home)
+    path('', include('testsystem.urls')),
+    # path('api/', include('testsystem.urls')),  # Подключаем API
+    # path('', home)
 ]

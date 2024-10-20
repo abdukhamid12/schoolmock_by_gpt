@@ -1,1 +1,1 @@
-from django.urls import path, includefrom rest_framework.routers import DefaultRouterfrom .views import *router = DefaultRouter()router.register(r'tests', TestViewSet)urlpatterns = [    path('', include(router.urls)),]
+# tests/urls.pyfrom django.urls import pathfrom .views import *urlpatterns = [    path('api/tests/<str:test_id>/', TestDetailView.as_view(), name='test-detail'),    path('', home)]
