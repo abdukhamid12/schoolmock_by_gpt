@@ -1,29 +1,61 @@
-# tests/models.py
 from django.db import models
+from django.contrib.auth.models import User
 
+# Модель учителя
+class Teacher(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    school = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.user.username
+
+# Модель студента
+class Student(models.Model):
+    name = models.CharField(max_length=100)
+    surname = models.CharField(max_length=100)
+    school = models.CharField(max_length=100)
+    classroom = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"{self.name} {self.surname}"
+
+# Модель теста
 class Test(models.Model):
-    test_id = models.CharField(max_length=6, unique=True)  # Уникальный ID теста (6 цифр)
-    name = models.CharField(max_length=255)
-    school = models.CharField(max_length=255)
-    class_name = models.CharField(max_length=50)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    classroom = models.CharField(max_length=50)
     start_date = models.DateTimeField()
-    duration = models.IntegerField(default=60)  # Продолжительность теста в минутах
+    duration = models.IntegerField(default=60)  # Время теста в минутах
 
     def __str__(self):
-        return self.name
+        return self.title
 
+# Модель вопроса
 class Question(models.Model):
-    test = models.ForeignKey(Test, related_name='questions', on_delete=models.CASCADE)
+    test = models.ForeignKey(Test, related_name="questions", on_delete=models.CASCADE)
     text = models.TextField()
-    points = models.IntegerField(default=1)
+    difficulty = models.IntegerField(default=1)
+    correct_answer = models.CharField(max_length=255)
 
     def __str__(self):
         return self.text
 
-class Answer(models.Model):
-    question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE)
+# Варианты ответа на вопрос
+class AnswerOption(models.Model):
+    question = models.ForeignKey(Question, related_name="options", on_delete=models.CASCADE)
     text = models.CharField(max_length=255)
-    is_correct = models.BooleanField(default=False)
+    is_correct = models.BooleanField(default=False)  # New field to indicate the correct answer
 
     def __str__(self):
         return self.text
+
+# Ответы студентов
+class StudentAnswer(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    answer = models.ForeignKey(AnswerOption, on_delete=models.CASCADE)
+    points_awarded = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.student.name} {self.student.surname} - {self.test.title}"
